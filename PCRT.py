@@ -435,20 +435,20 @@ class PNG(object):
 
 		'''check complete'''
 
-		if self.choices != '':
-			choice=self.choices
-		else:
-			msg=Termcolor('Notice','Show the repaired image? (y or n) [default:n] ')
-			choice=raw_input(msg)
-		if choice == 'y':
-			try:
-				from PIL import Image
-				self.file.close()
-				img=Image.open(self.out_file)
-				img.show()
-			except ImportError,e:
-				print Termcolor('Error',e)
-				print "Try 'pip install PIL' to use it"
+#		if self.choices != '':
+#			choice=self.choices
+#		else:
+#			msg=Termcolor('Notice','Show the repaired image? (y or n) [default:n] ')
+#			choice=raw_input(msg)
+#		if choice == 'y':
+#			try:
+#				from PIL import Image
+#				self.file.close()
+#				img=Image.open(self.out_file)
+#				img.show()
+#			except ImportError,e:
+#				print Termcolor('Error',e)
+#				print "Try 'pip install PIL' to use it"
 		return 0
 
 	def Checkcrc(self,chunk_type,chunk_data, checksum):
