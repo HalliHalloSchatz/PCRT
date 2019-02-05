@@ -509,13 +509,6 @@ class PNG(object):
 		length=struct.unpack('!I',IHDR[:4])[0]
 		chunk_type=IHDR[4:8]
 		chunk_ihdr=IHDR[8:8+length]
-		#print 'IHDR: %s'%(chunk_ihdr[:8])
-		#print 'IHDR: %s %s'%(struct.unpack('!II',chunk_ihdr[:8]))
-		#print 'IHDR: %s'%(struct.unpack('!I',chunk_ihdr[0:4]))
-		#print 'IHDR: %s'%(struct.unpack('!I',chunk_ihdr[4:8]))
-		#print 'IHDR: %s'%(struct.unpack('!I',chunk_ihdr[8:12]))
-		#print 'IHDR:',IHDR[8:12]
-		#quit()
 		width,height=struct.unpack('!II',chunk_ihdr[:8])
 		crc=IHDR[8+length:12+length]
 		# check crc
@@ -554,13 +547,9 @@ class PNG(object):
 							print '[Finished] Successfully fix crc'
 							break
 				else:
-					#print 'Test:%s - %s'%(height,struct.pack('!I',height))
-					#print 'Test:%s - %s'%(struct.unpack('!II',chunk_ihdr[:8]))
-					#quit()
 					print '[Test] Used standard Dimensions for testing'
 					random = 1
 					chunk_ihdr=struct.pack('!I',1920)+struct.pack('!I',1080)+IHDR[16:8+length]
-					#print 'IHDR: %s %s'%(struct.unpack('!II',chunk_ihdr[:8]))
 					if self.Checkcrc(chunk_type,chunk_ihdr,crc) == None:
 						IHDR=IHDR[:8]+chunk_ihdr+crc
 						random = 0
@@ -573,12 +562,9 @@ class PNG(object):
 						h = 0
 						for w in xrange(0,maxDimension):
 							w = w + 1
-							#print 'w: %s - h: %s'%(w,h)
 							for h in xrange(0,maxDimension):
 								h = h + 1
-								#print 'w: %s - h: %s'%(w,h)
 								chunk_ihdr=struct.pack('!I',w)+struct.pack('!I',h)+IHDR[16:8+length]
-								#print 'IHDR: %s %s'%(struct.unpack('!II',chunk_ihdr[:8]))
 								if self.Checkcrc(chunk_type,chunk_ihdr,crc) == None:
 									IHDR=IHDR[:8]+chunk_ihdr+crc
 									print '[Finished] Successfully fix Dimensions'
