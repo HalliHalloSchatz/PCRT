@@ -509,7 +509,13 @@ class PNG(object):
 		length=struct.unpack('!I',IHDR[:4])[0]
 		chunk_type=IHDR[4:8]
 		chunk_ihdr=IHDR[8:8+length]
-
+		#print 'IHDR: %s'%(chunk_ihdr[:8])
+		#print 'IHDR: %s %s'%(struct.unpack('!II',chunk_ihdr[:8]))
+		#print 'IHDR: %s'%(struct.unpack('!I',chunk_ihdr[0:4]))
+		#print 'IHDR: %s'%(struct.unpack('!I',chunk_ihdr[4:8]))
+		#print 'IHDR: %s'%(struct.unpack('!I',chunk_ihdr[8:12]))
+		#print 'IHDR:',IHDR[8:12]
+		#quit()
 		width,height=struct.unpack('!II',chunk_ihdr[:8])
 		crc=IHDR[8+length:12+length]
 		# check crc
@@ -522,22 +528,62 @@ class PNG(object):
 				msg = Termcolor('Notice','Try fixing it? (y or n) [default:y] ')
 				choice = raw_input(msg)
 			if choice == 'y' or choice=='':
+				maxDimension = 2000
+				if width > maxDimension:
+					print '[DETECT] large width: %s'%(width)
+					width = 0
+				if height > maxDimension:
+					print '[DETECT] large height: %s'%(height)
+					height = 0
 				if width > height:
 					# fix height
 					for h in xrange(height,width):
 						chunk_ihdr=IHDR[8:12]+struct.pack('!I',h)+IHDR[16:8+length]
+						print 'h: %s - height: %s - width: %s'%(h,height,width)
+						if self.Checkcrc(chunk_type,chunk_ihdr,crc) == None:
+							IHDR=IHDR[:8]+chunk_ihdr+crc
+							print '[Finished] Successfully fix crc'
+							break
+				elif width < height:
+					# fix width
+					for w in xrange(width,height):
+						chunk_ihdr=struct.pack('!I',w)+IHDR[12:8+length]
+						
 						if self.Checkcrc(chunk_type,chunk_ihdr,crc) == None:
 							IHDR=IHDR[:8]+chunk_ihdr+crc
 							print '[Finished] Successfully fix crc'
 							break
 				else:
-					# fix width
-					for w in xrange(width,height):
-						chunk_ihdr=struct.pack('!I',w)+IHDR[12:8+length]
-						if self.Checkcrc(chunk_type,chunk_ihdr,crc) == None:
-							IHDR=IHDR[:8]+chunk_ihdr+crc
-							print '[Finished] Successfully fix crc'
-							break
+					#print 'Test:%s - %s'%(height,struct.pack('!I',height))
+					#print 'Test:%s - %s'%(struct.unpack('!II',chunk_ihdr[:8]))
+					#quit()
+					print '[Test] Used standard Dimensions for testing'
+					random = 1
+					chunk_ihdr=struct.pack('!I',1920)+struct.pack('!I',1080)+IHDR[16:8+length]
+					#print 'IHDR: %s %s'%(struct.unpack('!II',chunk_ihdr[:8]))
+					if self.Checkcrc(chunk_type,chunk_ihdr,crc) == None:
+						IHDR=IHDR[:8]+chunk_ihdr+crc
+						random = 0
+						print '[Finished] Successfully fix Dimensions'
+						print 'W: %s - H: %s'%(struct.unpack('!II',chunk_ihdr[:8]))
+					
+					if random:
+						print '[Test] Used loops for Dimensions for testing'
+						w = 0
+						h = 0
+						for w in xrange(0,maxDimension):
+							w = w + 1
+							#print 'w: %s - h: %s'%(w,h)
+							for h in xrange(0,maxDimension):
+								h = h + 1
+								#print 'w: %s - h: %s'%(w,h)
+								chunk_ihdr=struct.pack('!I',w)+struct.pack('!I',h)+IHDR[16:8+length]
+								#print 'IHDR: %s %s'%(struct.unpack('!II',chunk_ihdr[:8]))
+								if self.Checkcrc(chunk_type,chunk_ihdr,crc) == None:
+									IHDR=IHDR[:8]+chunk_ihdr+crc
+									print '[Finished] Successfully fix Dimensions'
+									print 'W: %s - H: %s'%(struct.unpack('!II',chunk_ihdr[:8]))
+									break
 		else:
 			print '[Finished] Correct IHDR CRC (offset: %s): %s'% (int2hex(pos+4+length),str2hex(crc))
 		self.file.write(IHDR)
